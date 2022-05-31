@@ -16,19 +16,19 @@ app.use(expresLogger)
 
 const bus = RabbitMqBus.from(process.env.RABBITMQ_CONNECTION ?? "amqp://guest:guest@rabbitmq:5672/")
 
-app.get('/', async function (req, res) {
-    await bus.publish<TestMessage>({exchange: "test", topic: "#", message: { to: "xDDD"}})
+app.get('/:to', async function (req, res) {
+    await bus.publish<TestMessage>({exchange: "test", topic: "#", message: { to: req.params['to'] }})
     res.send('send')
   })
 
 
 const server = http.createServer(app);
 
-const io = new Server(server, { cors: { origin: '*' }, path: "/ws"}); // < Interesting!
+const io = new Server(server, { cors: { origin: '*' }}); // < Interesting!
 
 await bus.consume({exchange: "test", queue: "test", topic: "#"}, (msg: TestMessage) => {
-    logger.info(`Hello ${msg.to}`)
     io.emit("message", {"hello": msg.to})
+    logger.info(`Hello ${msg.to}`)
 });
 
 io.on("connection", (socket) => {
