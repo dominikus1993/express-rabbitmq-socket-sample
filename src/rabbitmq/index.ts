@@ -13,8 +13,8 @@ export interface ISubscription {
     readonly topic?: string
 }
 
-function onMessage<T>(action: (obj: T) => void) {
-    return (ch: Channel) => {
+function onMessage<T>(ch: Channel) {
+    return (action: (obj: T) => void) => {
         return (data: ConsumeMessage | null) => {
             if (data?.content) {
                 const msg: T | null | undefined = JSON.parse(data.content.toString())
@@ -49,7 +49,7 @@ export class RabbitMqBus {
                     channel.assertExchange(exchange, 'topic'),
                     channel.prefetch(1),
                     channel.bindQueue(queue, exchange, topic),
-                    channel.consume(queue, onMessage(action)(channel))
+                    channel.consume(queue, onMessage<T>(channel)(action))
                 ])
             }
         })
@@ -59,7 +59,7 @@ export class RabbitMqBus {
     }
 
     static from(url: string): RabbitMqBus {
-        const connection = rabbit.connect([url ?? "amqp://guest:guest@localhost:5672/"]);
+        const connection = rabbit.connect(url ?? "amqp://guest:guest@localhost:5672/");
         const channel = connection.createChannel();
         return new RabbitMqBus(connection, channel);
     }
