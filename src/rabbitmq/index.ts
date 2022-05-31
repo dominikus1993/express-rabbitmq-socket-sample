@@ -1,5 +1,6 @@
 import rabbit, { ChannelWrapper, AmqpConnectionManager } from "amqp-connection-manager"
 import { Channel, ConsumeMessage } from "amqplib";
+import crypto from "crypto"
 
 export interface IMessage<T> {
     readonly exchange: string
@@ -9,7 +10,7 @@ export interface IMessage<T> {
 
 export interface ISubscription {
     readonly exchange: string
-    readonly queue: string
+    readonly queuePrefix: string
     readonly topic?: string
 }
 
@@ -41,15 +42,16 @@ export class RabbitMqBus {
         this.#channel.publish(exchange, topic, Buffer.from(JSON.stringify(message)))
     }
 
-    async consume<T>({ exchange, queue, topic = "#" }: ISubscription, action: (obj: T) => void) {
+    async consume<T>({ exchange, queuePrefix, topic = "#" }: ISubscription, action: (obj: T) => void) {
+        const queueName = `${queuePrefix}-${crypto.randomBytes(8).toString("hex")}`
         const ch = this.#connection.createChannel({
             setup: (channel: Channel) => {
                 return Promise.all([
-                    channel.assertQueue(queue, { exclusive: false, autoDelete: false, durable: true }),
+                    channel.assertQueue(queueName, { exclusive: true, autoDelete: true, durable: true }),
                     channel.assertExchange(exchange, 'topic'),
                     channel.prefetch(1),
-                    channel.bindQueue(queue, exchange, topic),
-                    channel.consume(queue, onMessage<T>(channel)(action))
+                    channel.bindQueue(queueName, exchange, topic),
+                    channel.consume(queueName, onMessage<T>(channel)(action))
                 ])
             }
         })

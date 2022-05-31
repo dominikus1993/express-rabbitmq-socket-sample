@@ -26,7 +26,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, { cors: { origin: '*' }}); // < Interesting!
 
-await bus.consume({exchange: "test", queue: "test", topic: "#"}, (msg: TestMessage) => {
+await bus.consume({exchange: "test", queuePrefix: "test", topic: "#"}, (msg: TestMessage) => {
     io.emit("message", {"hello": msg.to})
     logger.info(`Hello ${msg.to}`)
 });
