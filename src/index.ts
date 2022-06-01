@@ -33,7 +33,7 @@ const io = new Server(server, { cors: { origin: '*' }}); // < Interesting!
 await Promise.all([pubClient.connect(), subClient.connect()]);
 io.adapter(createAdapter(pubClient, subClient));
 const emitter = new Emitter(pubClient)
-await bus.consume({exchange: "test", queuePrefix: "test", topic: "#"}, (msg: TestMessage) => {
+await bus.consume({exchange: process.env.EXCHANGE ?? "test", queue: process.env.QUEUE ?? "test", topic: process.env.TOPIC ?? "#"}, (msg: TestMessage) => {
     emitter.emit("message", msg)
     logger.info(`Hello ${msg.to}`)
 });
