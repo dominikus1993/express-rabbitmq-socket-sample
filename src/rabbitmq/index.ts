@@ -46,7 +46,7 @@ export class RabbitMqBus {
         const ch = this.#connection.createChannel({
             setup: (channel: Channel) => {
                 return Promise.all([
-                    channel.assertQueue(queue, { exclusive: true, autoDelete: true, durable: true }),
+                    channel.assertQueue(queue, { exclusive: false, autoDelete: false, durable: true }),
                     channel.assertExchange(exchange, 'topic'),
                     channel.prefetch(1),
                     channel.bindQueue(queue, exchange, topic),
