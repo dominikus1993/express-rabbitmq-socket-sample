@@ -6,9 +6,8 @@
   "scripts": {
     "build": "tsc",
     "dev": "nodemon -x node --no-warnings --experimental-specifier-resolution=node --loader ts-node/esm ./src/index.ts",
-    "start": "node --es-module-specifier-resolution=node ./dist/index.js",
-    "test": "node --no-warnings --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "xd": "pm2 start ./src/index.ts  --watch"
+    "start": "node --es-module-specifier-resolution=node ./build/index.js",
+    "test": "node --no-warnings --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
   "repository": {
     "type": "git",
