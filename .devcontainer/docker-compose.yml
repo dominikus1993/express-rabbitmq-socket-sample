@@ -29,6 +29,11 @@ services:
     ports:
       - '5672:5672'
       - '15672:15672'
+  db:
+    image: redis:6-bullseye
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
     # Uncomment to change startup options
     # environment:
     #  MONGO_INITDB_ROOT_USERNAME: root

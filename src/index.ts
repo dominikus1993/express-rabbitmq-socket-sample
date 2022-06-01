@@ -6,9 +6,13 @@ import body_parser from "body-parser"
 import { RabbitMqBus } from "./rabbitmq/index"
 import { Server } from "socket.io";
 import { TestMessage } from "./model/message";
-
+import { createAdapter } from "@socket.io/redis-adapter";
+import { createClient } from "redis";
+import { Emitter } from "@socket.io/redis-emitter";
 const logger = pino({level: "debug"})
 const expresLogger = express_pino({logger: logger})
+const pubClient = createClient({ url: process.env.REDIS_CONNECTION ?? "redis://db:6379" });
+const subClient = pubClient.duplicate();
 
 const app = express()
 app.use(body_parser.urlencoded({ extended: true }));
@@ -26,8 +30,11 @@ const server = http.createServer(app);
 
 const io = new Server(server, { cors: { origin: '*' }}); // < Interesting!
 
+await Promise.all([pubClient.connect(), subClient.connect()]);
+io.adapter(createAdapter(pubClient, subClient));
+const emitter = new Emitter(pubClient)
 await bus.consume({exchange: "test", queuePrefix: "test", topic: "#"}, (msg: TestMessage) => {
-    io.emit("message", {"hello": msg.to})
+    emitter.emit("message", msg)
     logger.info(`Hello ${msg.to}`)
 });
 
