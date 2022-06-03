@@ -11,7 +11,7 @@ import { createClient } from "redis";
 import { Emitter } from "@socket.io/redis-emitter";
 const logger = pino({level: process.env.NODE_ENV === "development" ? "debug": "warn"})
 const expresLogger = express_pino({logger: logger})
-const pubClient = createClient({ url: process.env.REDIS_CONNECTION ?? "redis://db:6379" });
+const pubClient = createClient({ url: process.env.REDIS_CONNECTION ?? "redis://db:6379", name: "pub" });
 const subClient = pubClient.duplicate();
 
 const app = express()
