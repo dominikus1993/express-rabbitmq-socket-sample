@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>SocketIO test</title>
+</head>
+
+<body>
+    <ul id="messages"></ul>
+
+    <script src="socket.io/socket.io.js"></script>
+    <script>
+        var socketClientApp = io();
+        var messages = document.getElementById('messages');
+        socketClientApp.on('message', (msg) => {
+            var li = document.createElement('li');
+            console.table(msg);
+            li.textContent = `Hello ${msg.to}`;
+            messages.append(li);
+        });
+    </script>
+</body>
+
+</html>
